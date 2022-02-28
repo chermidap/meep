@@ -17,3 +17,8 @@ mobility:
       - 545
       - 467
       - 473
+
+mobilityresource:
+  exchange: mobilityresource_exchange
+  updated:
+    key: mobilityresource.updated
