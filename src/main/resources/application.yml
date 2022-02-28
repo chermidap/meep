@@ -1,3 +1,4 @@
+spring.profiles.active: develop
 update-vehicles-info:
   scheduler-cron: 0/30 * * * * ?
 get-info-vehicles:
