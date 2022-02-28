@@ -33,6 +33,7 @@ cambio de estado de los recursos. Se puede implementar con Kafka o RabbitMQ.
 
     - Java 11+
     - Docker
+    - Docker-compose
     - maven
 
 
@@ -46,14 +47,21 @@ cambio de estado de los recursos. Se puede implementar con Kafka o RabbitMQ.
 
 ### Instalación y ejecución
 - Docker
-  Ejecutar el siguiente comando:
+  - Instalar docker y docker-compose
+  - Ejecutar el siguiente comando en la raiz del proyecto.
   
-    `docker run --name my-redis -p 6379:6379 -d redis`
+      `docker-compose up -d`
 
 
 - Ejecutar la aplicación con Maven
 
    `mvn clean spring-boot:run  -Dspring-boot.run.jvmArguments="-Dserver.port=8080"`
 
+  
+- Para monitorizar RabbitMQ
+  - http://localhost:15672/
+  - acceso
+    - user: guest
+    - password: guest
 
 
