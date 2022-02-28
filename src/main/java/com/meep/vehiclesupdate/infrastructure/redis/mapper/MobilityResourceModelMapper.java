@@ -11,10 +11,11 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
 )
 public interface MobilityResourceModelMapper {
+
   @Mapping(target = "localization", ignore = true)
   @Mapping(target = "creationDate", ignore = true)
-  @Mapping(target = "updatedAtDate", ignore = true)
   MoibilityResourceModel asVehicleModel(MobilityResource mobilityResource);
-  @Mapping(target = "resourceType",  ignore = true)
+
+  @Mapping(target = "resourceType", ignore = true)
   MobilityResource asVehicle(MoibilityResourceModel vehicle);
 }
