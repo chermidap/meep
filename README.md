@@ -1,12 +1,14 @@
-# meep
-## Introduction
+# Meep
+## Introducción
+Meep. Este proyecto es un microservicio springboot.
 
-Meep project. This is a springboot project microservice.
 This microservice get the changes that have occurred in the availability of vehicles with respect to their
 previous state every 30 seconds
 
-Redis is used to offer persistance to mobility resources.
+Este microservicio obtiene los cambios que se han producido en la disponibilidad de vehículos respecto a su
+estado anterior cada 30 segundos.
 
+Redis es usado para ofrecer persistencia a los recursos obtenidos del enpoint
 
 ### ¿Cómo de escalable es tu solución propuesta?
 Se ha elegido Redis para la gestión de la información que se obtiene del endpoint porque te permite realizar operaciones de manera 
@@ -28,14 +30,14 @@ proveedores sin tener que desplegar o modificar el código.
 - Otra mejora que se irá añadiendo es la publicación de resultados en una cola de eventos, para que otros microservicios se puedan subscribir y ser informados del
 cambio de estado de los recursos. Se puede implementar con Kafka o RabbitMQ.
 
-### Prerequisites
+### Prerequisitos
 
     - Java 11+
     - Docker
     - maven
 
 
-### Dependencies
+### Dependencias
 
     - Mapstruct
     - Junit 5
@@ -43,14 +45,14 @@ cambio de estado de los recursos. Se puede implementar con Kafka o RabbitMQ.
     - redis
 
 
-### Instalation  and execution
+### Instalación y ejecución
 - Docker
-  Simply execute the following command:
+  Ejecutar el siguiente comando:
   
     `docker run --name my-redis -p 6379:6379 -d redis`
 
 
-- Running Applications with Maven
+- Ejecutar la aplicación con Maven
 
    `mvn clean spring-boot:run  -Dspring-boot.run.jvmArguments="-Dserver.port=8080"`
 
