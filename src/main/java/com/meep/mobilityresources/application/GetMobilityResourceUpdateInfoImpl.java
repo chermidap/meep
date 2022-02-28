@@ -7,11 +7,14 @@ import com.meep.mobilityresources.domain.entity.ReportUpdate;
 import com.meep.mobilityresources.domain.infrastructure.MobilityResourceClient;
 import com.meep.mobilityresources.domain.repository.MobilityResourceRepository;
 import com.meep.mobilityresources.domain.usecase.GetMobilityResourceUpdateInfo;
+import com.meep.mobilityresources.infrastructure.rabbitmq.dispatcher.EventDispatcher;
+import com.meep.mobilityresources.infrastructure.rabbitmq.event.MobilityResourceUpdateEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -22,6 +25,11 @@ public class GetMobilityResourceUpdateInfoImpl implements GetMobilityResourceUpd
   private final MobilityResourceClient mobilityResourceClient;
 
   private final MobilityResourceRepository mobilityResourceRepository;
+
+  private final EventDispatcher eventDispatcher;
+
+  @Value("${mobility.params.location}")
+  private String location;
 
   @Override
   public ReportUpdate apply() {
@@ -62,6 +70,10 @@ public class GetMobilityResourceUpdateInfoImpl implements GetMobilityResourceUpd
       reportUpdate.getCurrentMobilityResources().forEach(vehicle -> log.info(vehicle.toString()));
     }
     log.info("GetMobilityResourceUpdateInfoImpl.apply end");
+
+    // Communicates the result via Event
+    eventDispatcher.send(
+        new MobilityResourceUpdateEvent(location,reportUpdate.getVehiclesAdded(),reportUpdate.getVehiclesDeleted()));
     return reportUpdate;
   }
 
