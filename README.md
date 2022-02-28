@@ -65,4 +65,7 @@ cambio de estado de los recursos. Se puede implementar con Kafka o RabbitMQ.
     - user: guest
     - password: guest
 
+- Para monitorizar Redis
+  - http://localhost:8081/
+
 
