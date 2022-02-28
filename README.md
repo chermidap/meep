@@ -43,6 +43,7 @@ cambio de estado de los recursos. Se puede implementar con Kafka o RabbitMQ.
     - Junit 5
     - Lombock
     - redis
+    - rabbitMq
 
 
 ### Instalación y ejecución
