@@ -1,7 +1,9 @@
 package com.meep.mobilityresources;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.meep.mobilityresources.domain.repository.MobilityResourceRepository;
 import com.meep.mobilityresources.domain.usecase.GetMobilityResourceUpdateInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,11 +18,17 @@ class GetMobilityResurcesUpdatedInfoIT {
   @Autowired
   private GetMobilityResourceUpdateInfo getVehiclesInfo;
 
+  @Autowired
+  private MobilityResourceRepository repository;
+
   @Test
-  void getMobilityResourcesUpdateInfoTest() throws Exception {
+  void getMobilityResourcesUpdateInfoTest(){
 
    var resourceUpdated = getVehiclesInfo.apply();
+   var bbddResources = repository.getAllMobilityResources();
    assertNotNull(resourceUpdated);
+   assertNotNull(bbddResources);
+   assertEquals(resourceUpdated.getCurrentMobilityResources(),bbddResources);
   }
 
 }
