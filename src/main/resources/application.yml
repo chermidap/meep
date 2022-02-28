@@ -1,0 +1,18 @@
+update-vehicles-info:
+  scheduler-cron: 0/30 * * * * ?
+get-info-vehicles:
+  url: https://apidev.meep.me/tripplan/api/v1/routers/{location}/resources?lowerLeftLatLon={lowerLeftLatLon}&upperRightLatLon={upperRightLatLon}&companyZoneIds={companyZoneIds}
+
+mobility:
+  params:
+    location: lisboa
+    lowerLeftLatLon:
+      - 38.711046
+      - -9.160096
+    upperRightLatLon:
+      - 38.739429
+      - -9.137115
+    companyZoneIds:
+      - 545
+      - 467
+      - 473
