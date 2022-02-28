@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @Builder
 public class ReportUpdate {
-  private List<MobilityResource> vehiclesAdded;
-  private List<MobilityResource> vehiclesDeleted;
+  private List<MobilityResource> mobilityResourceAdded;
+  private List<MobilityResource> mobilityResourceDeleted;
   private List<MobilityResource> currentMobilityResources;
 }

@@ -14,6 +14,8 @@ import com.meep.mobilityresources.domain.entity.MobilityResource;
 import com.meep.mobilityresources.domain.entity.MotoSharing;
 import com.meep.mobilityresources.domain.infrastructure.MobilityResourceClient;
 import com.meep.mobilityresources.domain.repository.MobilityResourceRepository;
+import com.meep.mobilityresources.infrastructure.rabbitmq.dispatcher.EventDispatcher;
+import com.meep.mobilityresources.infrastructure.rabbitmq.event.MobilityResourceUpdateEvent;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -31,6 +33,9 @@ class GetMobilityResourceUpdateInfoImplTest {
   @Mock
   private MobilityResourceRepository mobilityResourceRepository;
 
+  @Mock
+  private EventDispatcher eventDispatcher;
+
   @InjectMocks
   private GetMobilityResourceUpdateInfoImpl getVehiclesInfo;
 
@@ -44,12 +49,13 @@ class GetMobilityResourceUpdateInfoImplTest {
 
     when(mobilityResourceClient.getMobilityResourcesUpdateInfo()).thenReturn(mockGetOneMobilityResources());
     when(mobilityResourceRepository.getAllMobilityResources()).thenReturn(mockGetOneMobilityResources());
+    doNothing().when(eventDispatcher).send(any(MobilityResourceUpdateEvent.class));
     var report = getVehiclesInfo.apply();
     verify(mobilityResourceRepository, times(2)).getAllMobilityResources();
     verify(mobilityResourceClient, times(1)).getMobilityResourcesUpdateInfo();
     assertNotNull(report);
-    assertTrue(report.getVehiclesAdded().isEmpty());
-    assertTrue(report.getVehiclesDeleted().isEmpty());
+    assertTrue(report.getMobilityResourceAdded().isEmpty());
+    assertTrue(report.getMobilityResourceDeleted().isEmpty());
   }
 
   @Test
@@ -58,13 +64,14 @@ class GetMobilityResourceUpdateInfoImplTest {
     when(mobilityResourceClient.getMobilityResourcesUpdateInfo()).thenReturn(mockGetOneMobilityResources());
     when(mobilityResourceRepository.getAllMobilityResources()).thenReturn(mockGetSomeMobilityResources());
     when(mobilityResourceRepository.getMobilityResourceById(anyString())).thenReturn(mockGetMobiltiyResource());
+    doNothing().when(eventDispatcher).send(any(MobilityResourceUpdateEvent.class));
     doNothing().when(mobilityResourceRepository).deleteMobilityResourceById(any(String.class));
     var report = getVehiclesInfo.apply();
     verify(mobilityResourceRepository, times(2)).getAllMobilityResources();
     verify(mobilityResourceClient, times(1)).getMobilityResourcesUpdateInfo();
     assertNotNull(report);
-    assertTrue(report.getVehiclesAdded().isEmpty());
-    assertFalse(report.getVehiclesDeleted().isEmpty());
+    assertTrue(report.getMobilityResourceAdded().isEmpty());
+    assertFalse(report.getMobilityResourceDeleted().isEmpty());
   }
 
   @Test
@@ -72,13 +79,14 @@ class GetMobilityResourceUpdateInfoImplTest {
 
     when(mobilityResourceClient.getMobilityResourcesUpdateInfo()).thenReturn(mockGetSomeMobilityResources());
     when(mobilityResourceRepository.getAllMobilityResources()).thenReturn(mockGetOneMobilityResources());
+    doNothing().when(eventDispatcher).send(any(MobilityResourceUpdateEvent.class));
     doNothing().when(mobilityResourceRepository).updateMobilityResource(any(MobilityResource.class));
     var report = getVehiclesInfo.apply();
     verify(mobilityResourceRepository, times(2)).getAllMobilityResources();
     verify(mobilityResourceClient, times(1)).getMobilityResourcesUpdateInfo();
     assertNotNull(report);
-    assertFalse(report.getVehiclesAdded().isEmpty());
-    assertTrue(report.getVehiclesDeleted().isEmpty());
+    assertFalse(report.getMobilityResourceAdded().isEmpty());
+    assertTrue(report.getMobilityResourceDeleted().isEmpty());
   }
 
   List<MobilityResource> mockGetOneMobilityResources() {

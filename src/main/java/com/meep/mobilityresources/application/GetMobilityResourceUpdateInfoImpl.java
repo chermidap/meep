@@ -34,8 +34,8 @@ public class GetMobilityResourceUpdateInfoImpl implements GetMobilityResourceUpd
   @Override
   public ReportUpdate apply() {
     var reportUpdate = ReportUpdate.builder()
-        .vehiclesAdded(new ArrayList<>())
-        .vehiclesDeleted(new ArrayList<>())
+        .mobilityResourceAdded(new ArrayList<>())
+        .mobilityResourceDeleted(new ArrayList<>())
         .currentMobilityResources(new ArrayList<>()).build();
     log.info("GetMobilityResourceUpdateInfoImpl.apply start");
     try {
@@ -54,45 +54,45 @@ public class GetMobilityResourceUpdateInfoImpl implements GetMobilityResourceUpd
       log.error("GetMobilityResourceUpdateInfoImpl.apply" + e.getMessage());
     }
     log.info("------ Updating report ------");
-    log.info("vehicles added -----");
-    if (!reportUpdate.getVehiclesAdded().isEmpty()) {
-      reportUpdate.getVehiclesAdded().forEach(vehicle -> {
-        log.info(vehicle.toString());
+    log.info("mobility resources added -----");
+    if (!reportUpdate.getMobilityResourceAdded().isEmpty()) {
+      reportUpdate.getMobilityResourceAdded().forEach(resource -> {
+        log.info(resource.toString());
       });
     }
-    log.info("vehicles deleted -----");
-    if (!reportUpdate.getVehiclesDeleted().isEmpty()) {
-      reportUpdate.getVehiclesDeleted().forEach(vehicle -> log.info(vehicle.toString()));
+    log.info("mobility resources deleted -----");
+    if (!reportUpdate.getMobilityResourceDeleted().isEmpty()) {
+      reportUpdate.getMobilityResourceDeleted().forEach(resource -> log.info(resource.toString()));
     }
 
-    log.info("Current vehicles -----");
+    log.info("current mobility resources  -----");
     if (!reportUpdate.getCurrentMobilityResources().isEmpty()) {
-      reportUpdate.getCurrentMobilityResources().forEach(vehicle -> log.info(vehicle.toString()));
+      reportUpdate.getCurrentMobilityResources().forEach(resource -> log.info(resource.toString()));
     }
     log.info("GetMobilityResourceUpdateInfoImpl.apply end");
 
     // Communicates the result via Event
     eventDispatcher.send(
-        new MobilityResourceUpdateEvent(location,reportUpdate.getVehiclesAdded(),reportUpdate.getVehiclesDeleted()));
+        new MobilityResourceUpdateEvent(location,reportUpdate.getMobilityResourceAdded(),reportUpdate.getMobilityResourceDeleted()));
     return reportUpdate;
   }
 
   private void mergeUpdateResourceIngoList(ReportUpdate reportUpdate, List<MobilityResource> apilist, List<MobilityResource> redisList,
       List<MobilityResource> differentMobilityResourceList) {
     if (!differentMobilityResourceList.isEmpty()) {
-      reportUpdate.setVehiclesAdded(differentMobilityResourceList);
+      reportUpdate.setMobilityResourceAdded(differentMobilityResourceList);
       differentMobilityResourceList.forEach(mobilityResourceRepository::updateMobilityResource);
     } else {
       List<MobilityResource> deleted = new ArrayList<>();
       List<String> stringList = apilist.stream().map(MobilityResource::getId).collect(Collectors.toList());
       redisList.stream().map(MobilityResource::getId)
           .filter(element -> !stringList.contains(element))
-          .collect(Collectors.toList()).forEach(vehicleToDelete -> {
-            log.info(vehicleToDelete);
-            deleted.add(mobilityResourceRepository.getMobilityResourceById(vehicleToDelete));
-            mobilityResourceRepository.deleteMobilityResourceById(vehicleToDelete);
+          .collect(Collectors.toList()).forEach(resourceToDelete -> {
+            log.info(resourceToDelete);
+            deleted.add(mobilityResourceRepository.getMobilityResourceById(resourceToDelete));
+            mobilityResourceRepository.deleteMobilityResourceById(resourceToDelete);
           });
-      reportUpdate.setVehiclesDeleted(deleted);
+      reportUpdate.setMobilityResourceDeleted(deleted);
     }
   }
 }
