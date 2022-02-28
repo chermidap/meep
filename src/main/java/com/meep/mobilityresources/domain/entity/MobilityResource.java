@@ -18,5 +18,7 @@ public class MobilityResource {
 
   private long companyZoneId;
 
+  private MobilityResourceTypeEnum kindOfResource;
+
   private ResourceType resourceType;
 }

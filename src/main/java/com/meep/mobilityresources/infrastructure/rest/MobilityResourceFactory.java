@@ -2,6 +2,7 @@ package com.meep.mobilityresources.infrastructure.rest;
 
 import com.meep.mobilityresources.domain.entity.BikeStation;
 import com.meep.mobilityresources.domain.entity.MobilityResource;
+import com.meep.mobilityresources.domain.entity.MobilityResourceTypeEnum;
 import com.meep.mobilityresources.domain.entity.MotoSharing;
 import com.meep.mobilityresources.infrastructure.rest.dto.ResourceDTO;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,7 @@ public class MobilityResourceFactory {
           .resourcesImagesUrls(resource.getResourcesImagesUrls())
           .range(resource.getRange()).build();
       mobilityResource.setResourceType(moto);
+      mobilityResource.setKindOfResource(MobilityResourceTypeEnum.MOTOSHARING);
     }else{
       var bikeStation = BikeStation.builder()
           .station(resource.isStation())
@@ -30,6 +32,7 @@ public class MobilityResourceFactory {
           .availableResources(resource.getAvailableResources())
           .bikesAvailable(resource.isBikesAvailable()).spacesAvailable(resource.getSpacesAvailable()).build();
       mobilityResource.setResourceType(bikeStation);
+      mobilityResource.setKindOfResource(MobilityResourceTypeEnum.BIKESTATION);
     }
 
     mobilityResource.setAxisX(resource.getAxisX());

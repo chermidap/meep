@@ -11,8 +11,6 @@ public interface MobilityResourceRepository {
 
   List<MobilityResource> getAllMobilityResources();
 
-  void deleteMobilityResource(MobilityResource mobilityResource);
-
   void deleteMobilityResourceById(String id);
 
 }

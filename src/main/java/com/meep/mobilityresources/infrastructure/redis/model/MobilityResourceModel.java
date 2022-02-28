@@ -1,5 +1,6 @@
 package com.meep.mobilityresources.infrastructure.redis.model;
 
+import com.meep.mobilityresources.domain.entity.MobilityResourceTypeEnum;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -10,7 +11,7 @@ import org.springframework.data.redis.core.RedisHash;
 @Data
 @Builder
 @RedisHash("MobilityResource")
-public class MoibilityResourceModel implements Serializable {
+public class MobilityResourceModel implements Serializable {
 
   private String id;
 
@@ -25,6 +26,8 @@ public class MoibilityResourceModel implements Serializable {
   private Long companyZoneId;
 
   private String localization;
+
+  private MobilityResourceTypeEnum kindOfResource;
 
   private OffsetDateTime creationDate;
 }

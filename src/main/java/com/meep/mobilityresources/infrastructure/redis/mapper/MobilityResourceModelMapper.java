@@ -1,7 +1,7 @@
 package com.meep.mobilityresources.infrastructure.redis.mapper;
 
 import com.meep.mobilityresources.domain.entity.MobilityResource;
-import com.meep.mobilityresources.infrastructure.redis.model.MoibilityResourceModel;
+import com.meep.mobilityresources.infrastructure.redis.model.MobilityResourceModel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -14,8 +14,8 @@ public interface MobilityResourceModelMapper {
 
   @Mapping(target = "localization", ignore = true)
   @Mapping(target = "creationDate", ignore = true)
-  MoibilityResourceModel asVehicleModel(MobilityResource mobilityResource);
+  MobilityResourceModel asMobilityResourceModel(MobilityResource mobilityResource);
 
   @Mapping(target = "resourceType", ignore = true)
-  MobilityResource asVehicle(MoibilityResourceModel vehicle);
+  MobilityResource asMobilityResource(MobilityResourceModel vehicle);
 }

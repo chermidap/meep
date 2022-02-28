@@ -23,7 +23,7 @@ public class MobilityResourceRepositoryImpl implements MobilityResourceRepositor
   @Override
   public MobilityResource getMobilityResourceById(String id) {
     try {
-      return mapper.asVehicle(repository.findById(id).orElseThrow());
+      return mapper.asMobilityResource(repository.findById(id).orElseThrow());
     } catch (Exception e) {
       throw new MobilityResourceRepositoryException(String.format("Error retrieving Vehicle for id [%s]", id), e);
     }
@@ -36,7 +36,7 @@ public class MobilityResourceRepositoryImpl implements MobilityResourceRepositor
       var modelOptional = repository.findById(mobilityResource.getId());
       if (modelOptional.isEmpty()) {
         log.info("updateVehicle saved for vehicle id: {} ", mobilityResource.getId());
-        var model= mapper.asVehicleModel(mobilityResource);
+        var model = mapper.asMobilityResourceModel(mobilityResource);
         model.setCreationDate(OffsetDateTime.now());
         repository.save(model);
       }
@@ -51,17 +51,12 @@ public class MobilityResourceRepositoryImpl implements MobilityResourceRepositor
     List<MobilityResource> list = new ArrayList<>();
     try {
       repository.findAll().forEach(vehicleModel -> {
-        list.add(mapper.asVehicle(vehicleModel));
+        list.add(mapper.asMobilityResource(vehicleModel));
       });
     } catch (Exception e) {
       throw new MobilityResourceRepositoryException("Error getting all vehicles", e);
     }
     return list;
-  }
-
-  @Override
-  public void deleteMobilityResource(MobilityResource mobilityResource) {
-    repository.delete(mapper.asVehicleModel(mobilityResource));
   }
 
   @Override
