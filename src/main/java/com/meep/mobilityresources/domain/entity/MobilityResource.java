@@ -20,5 +20,5 @@ public class MobilityResource {
 
   private MobilityResourceTypeEnum kindOfResource;
 
-  private ResourceType resourceType;
+  private ResourceType mobilityResource;
 }

@@ -4,6 +4,7 @@ import static java.lang.String.format;
 
 import com.meep.mobilityresources.config.MobilityResourcesConnectionConfiguration;
 import com.meep.mobilityresources.domain.entity.MobilityResource;
+import com.meep.mobilityresources.domain.entity.MobilityResourceTypeEnum;
 import com.meep.mobilityresources.domain.exception.ResourceClientCommunicationException;
 import com.meep.mobilityresources.domain.infrastructure.MobilityResourceClient;
 import com.meep.mobilityresources.infrastructure.rest.dto.ResourceDTO;
@@ -37,7 +38,7 @@ public class MobilityResourceClientImpl implements MobilityResourceClient {
 
   private final RestTemplate restTemplate;
 
-  private final MobilityResourceFactory mobilityResourceFactory;
+  private final MobilityResourceMapper mapper;
 
   @Value("${get-info-vehicles.url}")
   private String restUrl;
@@ -59,7 +60,17 @@ public class MobilityResourceClientImpl implements MobilityResourceClient {
              UPPER_RIGHT_LATLON_QUERY_PARAM,sanitizeParams(upperRightLatLong),COMPANY_ZONE_IDS_QUERY_PARAM,sanitizeParams(companyIds))).getBody();
       if (resourceDTOList != null) {
         resourceDTOList.forEach(resource -> {
-          list.add(mobilityResourceFactory.from(resource));
+          var mobilityResource =  new MobilityResource();
+          if(!resource.isStation()){
+            var motosharin =  mapper.asMotoSharing(resource);
+            mobilityResource.setKindOfResource(MobilityResourceTypeEnum.MOTOSHARING);
+            mobilityResource.setMobilityResource(motosharin);
+          }else{
+            var bikeStation = mapper.asBikeStation(resource);
+            mobilityResource.setKindOfResource(MobilityResourceTypeEnum.BIKESTATION);
+            mobilityResource.setMobilityResource(bikeStation);
+          }
+           list.add(asMobilityResource(resource,mobilityResource));
         });
       }
     }catch (HttpStatusCodeException e) {
@@ -75,6 +86,20 @@ public class MobilityResourceClientImpl implements MobilityResourceClient {
       throw new ResourceClientCommunicationException("Unsupported error", e);
     }
     return list;
+  }
+
+  private MobilityResource asMobilityResource(ResourceDTO resourceDTO, MobilityResource mobilityResource) {
+    if ( resourceDTO == null && mobilityResource == null ) {
+      return null;
+    }
+    mobilityResource.setId( resourceDTO.getId() );
+    mobilityResource.setName( resourceDTO.getName() );
+    mobilityResource.setAxisX( resourceDTO.getAxisX() );
+    mobilityResource.setAxisY( resourceDTO.getAxisY() );
+    mobilityResource.setRealTimeData( resourceDTO.isRealTimeData() );
+    mobilityResource.setCompanyZoneId( resourceDTO.getCompanyZoneId() );
+
+    return mobilityResource;
   }
 
   private String sanitizeParams(List<String> source){

@@ -9,7 +9,7 @@ import lombok.Data;
 public class MobilityResourceUpdateEvent implements Serializable {
 
   private final String location;
-  private final List<MobilityResource> vehiclesAdded;
-  private final List<MobilityResource> vehiclesDeleted;
+  private final List<MobilityResourceEvent> vehiclesAdded;
+  private final List<MobilityResourceEvent> vehiclesDeleted;
 
 }
