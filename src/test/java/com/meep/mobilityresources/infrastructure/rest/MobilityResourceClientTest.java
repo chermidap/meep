@@ -1,6 +1,5 @@
 package com.meep.mobilityresources.infrastructure.rest;
 
-import static java.lang.String.format;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -12,40 +11,43 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.meep.mobilityresources.config.MobilityResourcesConnectionConfiguration;
-import com.meep.mobilityresources.domain.entity.MobilityResource;
-import com.meep.mobilityresources.domain.entity.MotoSharing;
 import com.meep.mobilityresources.domain.exception.ResourceClientCommunicationException;
 import com.meep.mobilityresources.infrastructure.rest.dto.ResourceDTO;
-import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @ExtendWith(MockitoExtension.class)
+@SpringBootTest
 class MobilityResourceClientTest {
 
   private RestTemplate restTemplate;
 
   private MobilityResourceClientImpl mobilityResourceClient;
 
-  private MobilityResourceFactory mobilityResourceFactory;
-
   private MobilityResourcesConnectionConfiguration configuration;
+
+  private MobilityResourceMapper mapper;
 
   @BeforeEach
   void setup() {
     restTemplate = mock(RestTemplate.class);
     configuration = mock(MobilityResourcesConnectionConfiguration.class);
-    mobilityResourceFactory = mock(MobilityResourceFactory.class);
-    mobilityResourceClient = new MobilityResourceClientImpl(restTemplate,mobilityResourceFactory,configuration);
+    mapper = mock(MobilityResourceMapper.class);
+    mobilityResourceClient = new MobilityResourceClientImpl(restTemplate,mapper,configuration);
+    ReflectionTestUtils.setField(mobilityResourceClient, "host", "http://localhost:8080");
+    ReflectionTestUtils.setField(mobilityResourceClient, "path", "/path/payment-by-id");
+
   }
 
   @Test
@@ -53,9 +55,8 @@ class MobilityResourceClientTest {
     var responseEntity = mock(ResponseEntity.class);
     when(configuration.getLocation()).thenReturn("lisboa");
     when(configuration.getCompanyZoneIds()).thenReturn(mockListStoreIds());
-    when(mobilityResourceFactory.from(any(ResourceDTO.class))).thenReturn(mockGetMobiltiyResource());
     when(restTemplate.exchange(any(), any(), any(), any(ParameterizedTypeReference.class),anyMap())).thenReturn(responseEntity);
-    when(responseEntity.getBody()).thenReturn(mockVehicleDTOList());
+    when(responseEntity.getBody()).thenReturn(mockMobilityResourceDTOList());
 
     var list = mobilityResourceClient.getMobilityResourcesUpdateInfo();
 
@@ -101,45 +102,18 @@ class MobilityResourceClientTest {
 
   }
 
-  private List<ResourceDTO> mockVehicleDTOList(){
-    var vehicleDto = new ResourceDTO();
-    vehicleDto.setId("");
-    vehicleDto.setName("");
-    vehicleDto.setStation(false);
-    vehicleDto.setRealTimeData(true);
+  private List<ResourceDTO> mockMobilityResourceDTOList(){
+    var resourceDTO = new ResourceDTO();
+    resourceDTO.setId("");
+    resourceDTO.setName("");
+    resourceDTO.setStation(false);
+    resourceDTO.setRealTimeData(true);
 
-    return List.of(vehicleDto);
-  }
-
-  private MobilityResource mockGetMobiltiyResource() {
-    var mob_sharing = new MobilityResource();
-    mob_sharing.setCompanyZoneId(473);
-    mob_sharing.setName("11VJ84");
-    mob_sharing.setId("PT-LIS-A00114");
-    mob_sharing.setAxisY(BigDecimal.valueOf(38.735588));
-    mob_sharing.setAxisX(BigDecimal.valueOf(-9.145258));
-    mob_sharing.setRealTimeData(true);
-    mob_sharing.setResourceType(MotoSharing.builder().build());
-    return mob_sharing;
+    return List.of(resourceDTO);
   }
 
   private List<String> mockListStoreIds(){
    return List.of("474");
   }
-
-  private String getResponse() {
-
-    return
-        "[{\"id\":\"PT-LIS-A00248\",\"name\":\"69VP33\",\"x\":-9.146417,\"y\":38.740987,\"licencePlate\":\"69VP33\",\"range\":21,"
-            + "\"batteryLevel\":28,\"helmets\":2,"
-            + "\"model\":\"Askoll\",\"resourceImageId\":\"vehicle_gen_ecooltra\",\"resourcesImagesUrls\":[\"vehicle_gen_ecooltra\"],"
-            + "\"realTimeData\":true,\"resourceType\":\"MOPED\","
-            + "\"companyZoneId\":473},{\"id\":\"PT-LIS-A00203\",\"name\":\"24VO79\",\"x\":-9.166813,\"y\":38.768433,"
-            + "\"licencePlate\":\"24VO79\",\"range\":47,\"batteryLevel\":62,"
-            + "\"helmets\":2,\"model\":\"Askoll\",\"resourceImageId\":\"vehicle_gen_ecooltra\","
-            + "\"resourcesImagesUrls\":[\"vehicle_gen_ecooltra\"],\"realTimeData\":true,"
-            + "\"resourceType\":\"MOPED\",\"companyZoneId\":473}]";
-  }
-
 
 }

@@ -16,6 +16,6 @@ public interface MobilityResourceModelMapper {
   @Mapping(target = "creationDate", ignore = true)
   MobilityResourceModel asMobilityResourceModel(MobilityResource mobilityResource);
 
-  @Mapping(target = "resourceType", ignore = true)
-  MobilityResource asMobilityResource(MobilityResourceModel vehicle);
+  @Mapping(target = "mobilityResource", ignore = true)
+  MobilityResource asMobilityResource(MobilityResourceModel mobilityResource);
 }

@@ -9,10 +9,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 public class UpdatingMobilityResourceInfoSchedulerConfiguration {
 
   @Autowired
-  private GetMobilityResourceUpdateInfo getVehiclesInfo;
+  private GetMobilityResourceUpdateInfo getMobilityResourceUpdateInfoInfo;
 
-  @Scheduled(cron = "${update-vehicles-info.scheduler-cron}")
+  @Scheduled(cron = "${update-mobility-resources-info.scheduler-cron}")
   public void startScheduler() {
-    getVehiclesInfo.apply();
+    getMobilityResourceUpdateInfoInfo.apply();
   }
 }

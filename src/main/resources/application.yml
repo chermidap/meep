@@ -1,8 +1,8 @@
-spring.profiles.active: develop
-update-vehicles-info:
+update-mobility-resources-info:
   scheduler-cron: 0/30 * * * * ?
-get-info-vehicles:
-  url: https://apidev.meep.me/tripplan/api/v1/routers/{location}/resources?lowerLeftLatLon={lowerLeftLatLon}&upperRightLatLon={upperRightLatLon}&companyZoneIds={companyZoneIds}
+get-info-mobility-resources:
+  host: https://apidev.meep.me/tripplan/api/v1
+  path: /routers/{location}/resources?lowerLeftLatLon={lowerLeftLatLon}&upperRightLatLon={upperRightLatLon}&companyZoneIds={companyZoneIds}
 
 mobility:
   params:

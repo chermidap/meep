@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MobilityResourceRepositoryException extends ApplicationException{
 
   public MobilityResourceRepositoryException(String message, Throwable e) {
-    super(message, e,1);
+    super(message, e);
     log.error(message, e);
   }
 

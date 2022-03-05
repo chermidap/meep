@@ -6,16 +6,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.meep.mobilityresources.domain.entity.MobilityResource;
 import com.meep.mobilityresources.domain.entity.MotoSharing;
+import com.meep.mobilityresources.domain.entity.ReportUpdate;
+import com.meep.mobilityresources.domain.exception.MobilityResourceRepositoryException;
+import com.meep.mobilityresources.domain.exception.ResourceClientCommunicationException;
 import com.meep.mobilityresources.domain.infrastructure.MobilityResourceClient;
 import com.meep.mobilityresources.domain.repository.MobilityResourceRepository;
-import com.meep.mobilityresources.infrastructure.rabbitmq.dispatcher.EventDispatcher;
-import com.meep.mobilityresources.infrastructure.rabbitmq.event.MobilityResourceUpdateEvent;
+import com.meep.mobilityresources.domain.usecase.PublishMobilityResourceUpdateInfo;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -34,23 +37,17 @@ class GetMobilityResourceUpdateInfoImplTest {
   private MobilityResourceRepository mobilityResourceRepository;
 
   @Mock
-  private EventDispatcher eventDispatcher;
+  private PublishMobilityResourceUpdateInfo publishMobilityResourceUpdateInfo;
 
   @InjectMocks
-  private GetMobilityResourceUpdateInfoImpl getVehiclesInfo;
+  private GetMobilityResourceUpdateInfoImpl getMobilityResourceUpdateInfo;
 
-  //scenarios
-  // caso de uso call api get new vehicles respecto a bbdd
-  // caso de uso call api get no differences respecto bbdd
-  // caso de uso call api get menos vehicles respoecot a bbdd
-  // en estos casos comprobar el objeto reporting
   @Test
   void given_ResourcesFromBBDD_when_ResourceMobilityClientCall_then_NoChangesReturnResult() {
 
     when(mobilityResourceClient.getMobilityResourcesUpdateInfo()).thenReturn(mockGetOneMobilityResources());
     when(mobilityResourceRepository.getAllMobilityResources()).thenReturn(mockGetOneMobilityResources());
-    doNothing().when(eventDispatcher).send(any(MobilityResourceUpdateEvent.class));
-    var report = getVehiclesInfo.apply();
+    var report = getMobilityResourceUpdateInfo.apply();
     verify(mobilityResourceRepository, times(2)).getAllMobilityResources();
     verify(mobilityResourceClient, times(1)).getMobilityResourcesUpdateInfo();
     assertNotNull(report);
@@ -64,9 +61,9 @@ class GetMobilityResourceUpdateInfoImplTest {
     when(mobilityResourceClient.getMobilityResourcesUpdateInfo()).thenReturn(mockGetOneMobilityResources());
     when(mobilityResourceRepository.getAllMobilityResources()).thenReturn(mockGetSomeMobilityResources());
     when(mobilityResourceRepository.getMobilityResourceById(anyString())).thenReturn(mockGetMobiltiyResource());
-    doNothing().when(eventDispatcher).send(any(MobilityResourceUpdateEvent.class));
+    doNothing().when(publishMobilityResourceUpdateInfo).apply(any(ReportUpdate.class));
     doNothing().when(mobilityResourceRepository).deleteMobilityResourceById(any(String.class));
-    var report = getVehiclesInfo.apply();
+    var report = getMobilityResourceUpdateInfo.apply();
     verify(mobilityResourceRepository, times(2)).getAllMobilityResources();
     verify(mobilityResourceClient, times(1)).getMobilityResourcesUpdateInfo();
     assertNotNull(report);
@@ -79,13 +76,36 @@ class GetMobilityResourceUpdateInfoImplTest {
 
     when(mobilityResourceClient.getMobilityResourcesUpdateInfo()).thenReturn(mockGetSomeMobilityResources());
     when(mobilityResourceRepository.getAllMobilityResources()).thenReturn(mockGetOneMobilityResources());
-    doNothing().when(eventDispatcher).send(any(MobilityResourceUpdateEvent.class));
+    doNothing().when(publishMobilityResourceUpdateInfo).apply(any(ReportUpdate.class));
     doNothing().when(mobilityResourceRepository).updateMobilityResource(any(MobilityResource.class));
-    var report = getVehiclesInfo.apply();
+    var report = getMobilityResourceUpdateInfo.apply();
     verify(mobilityResourceRepository, times(2)).getAllMobilityResources();
     verify(mobilityResourceClient, times(1)).getMobilityResourcesUpdateInfo();
     assertNotNull(report);
     assertFalse(report.getMobilityResourceAdded().isEmpty());
+    assertTrue(report.getMobilityResourceDeleted().isEmpty());
+  }
+
+  @Test
+  void given_SomeErrorFromBBDD_when_ResourceMobilityClientCall_then_NoUpdateReports() {
+
+    doThrow(MobilityResourceRepositoryException.class).when(mobilityResourceRepository).getAllMobilityResources();
+    when(mobilityResourceClient.getMobilityResourcesUpdateInfo()).thenReturn(mockGetSomeMobilityResources());
+    var report = getMobilityResourceUpdateInfo.apply();
+    verify(mobilityResourceClient, times(1)).getMobilityResourcesUpdateInfo();
+    assertNotNull(report);
+    assertTrue(report.getMobilityResourceAdded().isEmpty());
+    assertTrue(report.getMobilityResourceDeleted().isEmpty());
+  }
+
+  @Test
+  void given_SomeErrorFromRestClient_when_ResourceMobilityClientCall_then_NoUpdateReports() {
+
+    doThrow(ResourceClientCommunicationException.class).when(mobilityResourceClient).getMobilityResourcesUpdateInfo();
+    var report = getMobilityResourceUpdateInfo.apply();
+    verify(mobilityResourceClient, times(1)).getMobilityResourcesUpdateInfo();
+    assertNotNull(report);
+    assertTrue(report.getMobilityResourceAdded().isEmpty());
     assertTrue(report.getMobilityResourceDeleted().isEmpty());
   }
 
@@ -98,7 +118,7 @@ class GetMobilityResourceUpdateInfoImplTest {
     mob_sharing.setAxisY(BigDecimal.valueOf(38.735588));
     mob_sharing.setAxisX(BigDecimal.valueOf(-9.145258));
     mob_sharing.setRealTimeData(true);
-    mob_sharing.setResourceType(MotoSharing.builder().build());
+    mob_sharing.setMobilityResource(MotoSharing.builder().build());
 
     return List.of(mob_sharing);
   }
@@ -112,7 +132,7 @@ class GetMobilityResourceUpdateInfoImplTest {
     mob_sharing.setAxisY(BigDecimal.valueOf(38.735588));
     mob_sharing.setAxisX(BigDecimal.valueOf(-9.145258));
     mob_sharing.setRealTimeData(true);
-    mob_sharing.setResourceType(MotoSharing.builder().build());
+    mob_sharing.setMobilityResource(MotoSharing.builder().build());
 
     var mob_sharing2 = new MobilityResource();
     mob_sharing2.setCompanyZoneId(473);
@@ -121,7 +141,7 @@ class GetMobilityResourceUpdateInfoImplTest {
     mob_sharing2.setAxisY(BigDecimal.valueOf(38.736084));
     mob_sharing2.setAxisX(BigDecimal.valueOf(-9.146189));
     mob_sharing2.setRealTimeData(true);
-    mob_sharing2.setResourceType(MotoSharing.builder().build());
+    mob_sharing2.setMobilityResource(MotoSharing.builder().build());
 
     return List.of(mob_sharing, mob_sharing2);
   }
@@ -134,7 +154,7 @@ class GetMobilityResourceUpdateInfoImplTest {
     mob_sharing.setAxisY(BigDecimal.valueOf(38.735588));
     mob_sharing.setAxisX(BigDecimal.valueOf(-9.145258));
     mob_sharing.setRealTimeData(true);
-    mob_sharing.setResourceType(MotoSharing.builder().build());
+    mob_sharing.setMobilityResource(MotoSharing.builder().build());
     return mob_sharing;
   }
 
