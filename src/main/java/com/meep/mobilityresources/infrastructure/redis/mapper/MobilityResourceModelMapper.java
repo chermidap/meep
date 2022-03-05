@@ -17,5 +17,5 @@ public interface MobilityResourceModelMapper {
   MobilityResourceModel asMobilityResourceModel(MobilityResource mobilityResource);
 
   @Mapping(target = "mobilityResource", ignore = true)
-  MobilityResource asMobilityResource(MobilityResourceModel vehicle);
+  MobilityResource asMobilityResource(MobilityResourceModel mobilityResource);
 }

@@ -34,14 +34,14 @@ class MobilityResourceRepositoryTest {
   private MobilityResourceModelMapper mapper = Mappers.getMapper(MobilityResourceModelMapper.class);
 
   @InjectMocks
-  MobilityResourceRepositoryImpl vehiclesInfoRepository;
+  MobilityResourceRepositoryImpl mobilityResourceRepository;
 
   @Test
-  void given_VehiclesInfo_when_VehiclesCall_then_ReturnProperResult() {
+  void given_MobilityResourceInfo_when_MobilityResourcesCall_then_ReturnProperResult() {
 
     when(repository.findById(anyString())).thenReturn(Optional.of(MobilityResourceModel.builder().id("123456").build()));
 
-    var result = vehiclesInfoRepository.getMobilityResourceById("123456");
+    var result = mobilityResourceRepository.getMobilityResourceById("123456");
 
     assertNotNull(result);
     assertThat(result.getId(), is("123456"));
@@ -49,26 +49,26 @@ class MobilityResourceRepositoryTest {
   }
 
   @Test
-  void given_VehiclesInfo_when_UpdateVehiclesinfo_then_ReturnProperResult() {
+  void given_MobilityResourceInfo_when_UpdateMobilityResourcesInfo_then_ReturnProperResult() {
 
     when(repository.findById(anyString())).thenReturn(Optional.empty());
-    var vehicle = new MobilityResource();
-    vehicle.setId("123456");
-    vehiclesInfoRepository.updateMobilityResource(vehicle);
+    var mobilityResource = new MobilityResource();
+    mobilityResource.setId("123456");
+    mobilityResourceRepository.updateMobilityResource(mobilityResource);
     verify(repository, times(1)).save(any(MobilityResourceModel.class));
   }
 
   @Test
-  void given_ErrorOnRepository_when_UpdateVehicle_then_ThrowException() {
-    var vehicle = new MobilityResource();
-    vehicle.setId("123456");
+  void given_ErrorOnRepository_when_UpdateMobilityResource_then_ThrowException() {
+    var mobilityResource = new MobilityResource();
+    mobilityResource.setId("123456");
     when(repository.findById(any(String.class))).thenThrow(RuntimeException.class);
 
     var exceptionThrown = assertThrows(MobilityResourceRepositoryException.class,
-        () -> vehiclesInfoRepository.updateMobilityResource(vehicle),
-        "Expected VehicleRepositoryException to be thrown, but was not."
+        () -> mobilityResourceRepository.updateMobilityResource(mobilityResource),
+        "Expected MobilityResourceRepositoryException to be thrown"
     );
-    assertThat(exceptionThrown.getMessage(), is("Error updating vehicle with Id [123456]"));
+    assertThat(exceptionThrown.getMessage(), is("Error updating mobility resource with Id [123456]"));
   }
 
   @Test
@@ -76,10 +76,10 @@ class MobilityResourceRepositoryTest {
     when(repository.findById(any(String.class))).thenThrow(RuntimeException.class);
 
     var exceptionThrown = assertThrows(MobilityResourceRepositoryException.class,
-        () -> vehiclesInfoRepository.getMobilityResourceById("123456"),
-        "Expected VehicleRepositoryException to be thrown, but was not."
+        () -> mobilityResourceRepository.getMobilityResourceById("123456"),
+        "Expected MobilityResourceRepositoryException to be thrown"
     );
-    assertThat(exceptionThrown.getMessage(), is("Error retrieving Vehicle for id [123456]"));
+    assertThat(exceptionThrown.getMessage(), is("Error retrieving mobility resource for id [123456]"));
   }
 
 }

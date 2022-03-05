@@ -16,7 +16,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 class GetMobilityResurcesUpdatedInfoIT {
 
   @Autowired
-  private GetMobilityResourceUpdateInfo getVehiclesInfo;
+  private GetMobilityResourceUpdateInfo getMobilityResourceUpdateInfo;
 
   @Autowired
   private MobilityResourceRepository repository;
@@ -24,7 +24,7 @@ class GetMobilityResurcesUpdatedInfoIT {
   @Test
   void getMobilityResourcesUpdateInfoTest(){
 
-   var resourceUpdated = getVehiclesInfo.apply();
+   var resourceUpdated = getMobilityResourceUpdateInfo.apply();
    var bbddResources = repository.getAllMobilityResources();
    assertNotNull(resourceUpdated);
    assertNotNull(bbddResources);

@@ -1,6 +1,7 @@
 package com.meep.mobilityresources.application;
 
 import com.meep.mobilityresources.domain.entity.ReportUpdate;
+import com.meep.mobilityresources.domain.exception.PublishEventException;
 import com.meep.mobilityresources.domain.usecase.PublishMobilityResourceUpdateInfo;
 import com.meep.mobilityresources.infrastructure.rabbitmq.dispatcher.EventDispatcher;
 import com.meep.mobilityresources.infrastructure.rabbitmq.event.MobilityResourceUpdateEvent;
@@ -24,9 +25,15 @@ public class PublishMobilityResourceUpdateInfoImpl implements PublishMobilityRes
   @Override
   public void apply(ReportUpdate reportUpdate) {
     // Communicates the result via Event
-    eventDispatcher.send(
-        new MobilityResourceUpdateEvent(location,
-            mapper.asMobilityResourceEvents(reportUpdate.getMobilityResourceAdded()),
-            mapper.asMobilityResourceEvents(reportUpdate.getMobilityResourceDeleted())));
+    try{
+      eventDispatcher.send(
+          new MobilityResourceUpdateEvent(location,
+              mapper.asMobilityResourceEvents(reportUpdate.getMobilityResourceAdded()),
+              mapper.asMobilityResourceEvents(reportUpdate.getMobilityResourceDeleted())));
+    }catch (Exception e){
+      log.error("Error publishing events ->"+e.getMessage());
+      throw new PublishEventException("Error publishing event",e);
+    }
+
   }
 }

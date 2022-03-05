@@ -25,7 +25,7 @@ public class MobilityResourceRepositoryImpl implements MobilityResourceRepositor
     try {
       return mapper.asMobilityResource(repository.findById(id).orElseThrow());
     } catch (Exception e) {
-      throw new MobilityResourceRepositoryException(String.format("Error retrieving Vehicle for id [%s]", id), e);
+      throw new MobilityResourceRepositoryException(String.format("Error retrieving mobility resource for id [%s]", id), e);
     }
 
   }
@@ -35,26 +35,25 @@ public class MobilityResourceRepositoryImpl implements MobilityResourceRepositor
     try {
       var modelOptional = repository.findById(mobilityResource.getId());
       if (modelOptional.isEmpty()) {
-        log.info("updateVehicle saved for vehicle id: {} ", mobilityResource.getId());
+        log.info("updateMobilityResource saved for mobility resource id: {} ", mobilityResource.getId());
         var model = mapper.asMobilityResourceModel(mobilityResource);
         model.setCreationDate(OffsetDateTime.now());
         repository.save(model);
       }
     } catch (Exception e) {
-      throw new MobilityResourceRepositoryException(String.format("Error updating vehicle with Id [%s]", mobilityResource.getId()), e);
+      throw new MobilityResourceRepositoryException(String.format("Error updating mobility resource with Id [%s]", mobilityResource.getId()), e);
     }
   }
 
   @Override
   public List<MobilityResource> getAllMobilityResources() {
-    //mapper VehicleModel to Vehicle
     List<MobilityResource> list = new ArrayList<>();
     try {
-      repository.findAll().forEach(vehicleModel -> {
-        list.add(mapper.asMobilityResource(vehicleModel));
+      repository.findAll().forEach(mobilityResourceModel -> {
+        list.add(mapper.asMobilityResource(mobilityResourceModel));
       });
     } catch (Exception e) {
-      throw new MobilityResourceRepositoryException("Error getting all vehicles", e);
+      throw new MobilityResourceRepositoryException("Error getting all mobility resource", e);
     }
     return list;
   }

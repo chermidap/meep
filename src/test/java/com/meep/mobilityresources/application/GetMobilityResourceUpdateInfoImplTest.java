@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,6 +14,8 @@ import static org.mockito.Mockito.when;
 import com.meep.mobilityresources.domain.entity.MobilityResource;
 import com.meep.mobilityresources.domain.entity.MotoSharing;
 import com.meep.mobilityresources.domain.entity.ReportUpdate;
+import com.meep.mobilityresources.domain.exception.MobilityResourceRepositoryException;
+import com.meep.mobilityresources.domain.exception.ResourceClientCommunicationException;
 import com.meep.mobilityresources.domain.infrastructure.MobilityResourceClient;
 import com.meep.mobilityresources.domain.repository.MobilityResourceRepository;
 import com.meep.mobilityresources.domain.usecase.PublishMobilityResourceUpdateInfo;
@@ -80,6 +83,29 @@ class GetMobilityResourceUpdateInfoImplTest {
     verify(mobilityResourceClient, times(1)).getMobilityResourcesUpdateInfo();
     assertNotNull(report);
     assertFalse(report.getMobilityResourceAdded().isEmpty());
+    assertTrue(report.getMobilityResourceDeleted().isEmpty());
+  }
+
+  @Test
+  void given_SomeErrorFromBBDD_when_ResourceMobilityClientCall_then_NoUpdateReports() {
+
+    doThrow(MobilityResourceRepositoryException.class).when(mobilityResourceRepository).getAllMobilityResources();
+    when(mobilityResourceClient.getMobilityResourcesUpdateInfo()).thenReturn(mockGetSomeMobilityResources());
+    var report = getMobilityResourceUpdateInfo.apply();
+    verify(mobilityResourceClient, times(1)).getMobilityResourcesUpdateInfo();
+    assertNotNull(report);
+    assertTrue(report.getMobilityResourceAdded().isEmpty());
+    assertTrue(report.getMobilityResourceDeleted().isEmpty());
+  }
+
+  @Test
+  void given_SomeErrorFromRestClient_when_ResourceMobilityClientCall_then_NoUpdateReports() {
+
+    doThrow(ResourceClientCommunicationException.class).when(mobilityResourceClient).getMobilityResourcesUpdateInfo();
+    var report = getMobilityResourceUpdateInfo.apply();
+    verify(mobilityResourceClient, times(1)).getMobilityResourcesUpdateInfo();
+    assertNotNull(report);
+    assertTrue(report.getMobilityResourceAdded().isEmpty());
     assertTrue(report.getMobilityResourceDeleted().isEmpty());
   }
 

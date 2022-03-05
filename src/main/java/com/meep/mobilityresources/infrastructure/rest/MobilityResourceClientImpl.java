@@ -8,6 +8,8 @@ import com.meep.mobilityresources.domain.entity.MobilityResourceTypeEnum;
 import com.meep.mobilityresources.domain.exception.ResourceClientCommunicationException;
 import com.meep.mobilityresources.domain.infrastructure.MobilityResourceClient;
 import com.meep.mobilityresources.infrastructure.rest.dto.ResourceDTO;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,21 +42,24 @@ public class MobilityResourceClientImpl implements MobilityResourceClient {
 
   private final MobilityResourceMapper mapper;
 
-  @Value("${get-info-vehicles.url}")
-  private String restUrl;
+  @Value("${get-info-mobility-resources.host}")
+  private String host;
+
+  @Value("${get-info-mobility-resources.path}")
+  private String path;
 
   private final MobilityResourcesConnectionConfiguration mobilityResourcesConnectionConfiguration;
 
   public List<MobilityResource> getMobilityResourcesUpdateInfo() {
     var list = new ArrayList<MobilityResource>();
-    log.info("getMobilityResourcesUpdateInfo call url --> " + restUrl);
+    log.info("getMobilityResourcesUpdateInfo call url --> " + host+path);
     try{
-     var location = mobilityResourcesConnectionConfiguration.getLocation();
-     var lowerLeftLatLong = mobilityResourcesConnectionConfiguration.getLowerLeftLatLon();
-     var upperRightLatLong = mobilityResourcesConnectionConfiguration.getUpperRightLatLon();
-     var companyIds = mobilityResourcesConnectionConfiguration.getCompanyZoneIds();
+      var location = mobilityResourcesConnectionConfiguration.getLocation();
+      var lowerLeftLatLong = mobilityResourcesConnectionConfiguration.getLowerLeftLatLon();
+      var upperRightLatLong = mobilityResourcesConnectionConfiguration.getUpperRightLatLon();
+      var companyIds = mobilityResourcesConnectionConfiguration.getCompanyZoneIds();
 
-     List<ResourceDTO> resourceDTOList = restTemplate.exchange(restUrl, HttpMethod.GET, null,
+     List<ResourceDTO> resourceDTOList = restTemplate.exchange(getClientUrl(), HttpMethod.GET, null,
           new ParameterizedTypeReference<List<ResourceDTO>>() {
           }, Map.of(LOCATION_QUERY_PARAM, location, LOWER_LEFT_LATLON_QUERY_PARAM, sanitizeParams(lowerLeftLatLong),
              UPPER_RIGHT_LATLON_QUERY_PARAM,sanitizeParams(upperRightLatLong),COMPANY_ZONE_IDS_QUERY_PARAM,sanitizeParams(companyIds))).getBody();
@@ -105,5 +110,26 @@ public class MobilityResourceClientImpl implements MobilityResourceClient {
   private String sanitizeParams(List<String> source){
     var s = source.toString();
     return s.replaceAll(REGEX, "");
+  }
+
+  private String getClientUrl() {
+    if (!this.isValidURI(this.host)) {
+      throw new IllegalArgumentException("Host defined in RestClient should have a valid value.");
+    }
+    return host+path;
+  }
+
+  private boolean isValidURI(final String url) {
+    if (url != null && !url.isEmpty()) {
+      try {
+        new URI(url);
+        return true;
+      } catch (URISyntaxException var3) {
+        log.error("RestClient URL syntax error", var3);
+        return false;
+      }
+    } else {
+      return false;
+    }
   }
 }

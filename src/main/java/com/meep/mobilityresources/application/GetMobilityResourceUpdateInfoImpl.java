@@ -32,49 +32,53 @@ public class GetMobilityResourceUpdateInfoImpl implements GetMobilityResourceUpd
 
   @Override
   public ReportUpdate apply() {
-    var reportUpdate = ReportUpdate.builder()
-        .mobilityResourceAdded(new ArrayList<>())
-        .mobilityResourceDeleted(new ArrayList<>())
-        .currentMobilityResources(new ArrayList<>()).build();
+    ReportUpdate reportUpdate = createReportUpdate();
     log.info("GetMobilityResourceUpdateInfoImpl.apply start");
     try {
 
-      List<MobilityResource> apilist = mobilityResourceClient.getMobilityResourcesUpdateInfo();
-      List<MobilityResource> redisList = mobilityResourceRepository.getAllMobilityResources();
+      List<MobilityResource> apiMobilityResources = mobilityResourceClient.getMobilityResourcesUpdateInfo();
+      List<MobilityResource> allMobilityResources = mobilityResourceRepository.getAllMobilityResources();
 
-      var partitionedVehicles = apilist.stream()
-          .collect(partitioningBy(newVehicle ->
-              redisList.stream()
-                  .anyMatch(oldVehicle -> oldVehicle.getId().equals(newVehicle.getId()))));
-      List<MobilityResource> differentMobilityResourceList = partitionedVehicles.get(false);
-      mergeUpdateResourceInfoList(reportUpdate, apilist, redisList, differentMobilityResourceList);
+      var partitionedMobilityResources = apiMobilityResources.stream()
+          .collect(partitioningBy(newResource ->
+              allMobilityResources.stream()
+                  .anyMatch(oldResource -> oldResource.getId().equals(newResource.getId()))));
+      List<MobilityResource> differentMobilityResourceList = partitionedMobilityResources.get(false);
+      mergeUpdateResourceInfoList(reportUpdate, apiMobilityResources, allMobilityResources, differentMobilityResourceList);
       reportUpdate.setCurrentMobilityResources(mobilityResourceRepository.getAllMobilityResources());
+
+      log.info("------ Updating report ------");
+      log.info("mobility resources added -----");
+      if (!reportUpdate.getMobilityResourceAdded().isEmpty()) {
+        reportUpdate.getMobilityResourceAdded().forEach(resource -> {
+          log.info(resource.toString());
+        });
+      }
+      log.info("mobility resources deleted -----");
+      if (!reportUpdate.getMobilityResourceDeleted().isEmpty()) {
+        reportUpdate.getMobilityResourceDeleted().forEach(resource -> log.info(resource.toString()));
+      }
+
+      log.info("current mobility resources  -----");
+      if (!reportUpdate.getCurrentMobilityResources().isEmpty()) {
+        reportUpdate.getCurrentMobilityResources().forEach(resource -> log.info(resource.toString()));
+      }
+      log.info("GetMobilityResourceUpdateInfoImpl.apply end");
+
+      if (!reportUpdate.getMobilityResourceDeleted().isEmpty() || !reportUpdate.getMobilityResourceAdded().isEmpty()) {
+        publishMobilityResourceUpdateInfo.apply(reportUpdate);
+      }
     } catch (Exception e) {
       log.error("GetMobilityResourceUpdateInfoImpl.apply" + e.getMessage());
     }
-    log.info("------ Updating report ------");
-    log.info("mobility resources added -----");
-    if (!reportUpdate.getMobilityResourceAdded().isEmpty()) {
-      reportUpdate.getMobilityResourceAdded().forEach(resource -> {
-        log.info(resource.toString());
-      });
-    }
-    log.info("mobility resources deleted -----");
-    if (!reportUpdate.getMobilityResourceDeleted().isEmpty()) {
-      reportUpdate.getMobilityResourceDeleted().forEach(resource -> log.info(resource.toString()));
-    }
-
-    log.info("current mobility resources  -----");
-    if (!reportUpdate.getCurrentMobilityResources().isEmpty()) {
-      reportUpdate.getCurrentMobilityResources().forEach(resource -> log.info(resource.toString()));
-    }
-    log.info("GetMobilityResourceUpdateInfoImpl.apply end");
-
-    if(!reportUpdate.getMobilityResourceDeleted().isEmpty() || !reportUpdate.getMobilityResourceAdded().isEmpty()){
-      publishMobilityResourceUpdateInfo.apply(reportUpdate);
-    }
-
     return reportUpdate;
+  }
+
+  private ReportUpdate createReportUpdate() {
+    return ReportUpdate.builder()
+        .mobilityResourceAdded(new ArrayList<>())
+        .mobilityResourceDeleted(new ArrayList<>())
+        .currentMobilityResources(new ArrayList<>()).build();
   }
 
   private void mergeUpdateResourceInfoList(ReportUpdate reportUpdate, List<MobilityResource> apilist, List<MobilityResource> redisList,
